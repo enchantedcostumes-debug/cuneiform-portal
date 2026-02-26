@@ -112,36 +112,36 @@
         <h2 class="text-gold">Learn Cuneiform</h2>
         <p class="text-silver">Start your journey into the world's oldest writing system</p>
         <div class="feature-grid">
-            <a class="feature-card" href="https://www.enchantedozarks.com/cuneiform-ocr/learn/" target="_blank">
+            <div class="feature-card" onclick="showTab('signs');document.querySelector('[onclick*=signs]').classList.add('active');">
                 <div class="card-icon cuneiform-glyph">&#x12000;</div>
-                <h3>Grammar Lessons</h3>
-                <p>Structured lessons from basic signs to full sentences</p>
-            </a>
-            <a class="feature-card" href="https://www.enchantedozarks.com/cuneiform-ocr/flashcards/" target="_blank">
+                <h3>Sign Chart</h3>
+                <p>Browse all 2,093 cuneiform signs with readings and classifications</p>
+            </div>
+            <div class="feature-card" onclick="showTab('search');document.querySelector('[onclick*=search]').classList.add('active');">
                 <div class="card-icon">A-Z</div>
-                <h3>Flashcards</h3>
-                <p>Practice sign recognition with spaced repetition</p>
-            </a>
-            <a class="feature-card" href="https://www.enchantedozarks.com/cuneiform-ocr/pronunciation/" target="_blank">
-                <div class="card-icon">[~]</div>
-                <h3>Pronunciation Guide</h3>
-                <p>Learn how Sumerian and Akkadian sounded</p>
-            </a>
-            <a class="feature-card" href="https://www.enchantedozarks.com/cuneiform-ocr/sentence-builder/" target="_blank">
+                <h3>Word Search</h3>
+                <p>Search 48,080 lemmas across the entire corpus</p>
+            </div>
+            <div class="feature-card" onclick="showTab('concordance');document.querySelector('[onclick*=concordance]').classList.add('active');">
                 <div class="card-icon">[+]</div>
-                <h3>Sentence Builder</h3>
-                <p>Construct your own cuneiform sentences</p>
-            </a>
-            <a class="feature-card" href="https://www.enchantedozarks.com/cuneiform-ocr/name/" target="_blank">
-                <div class="card-icon">[*]</div>
-                <h3>Name Converter</h3>
-                <p>Write your name in cuneiform script</p>
-            </a>
-            <a class="feature-card" href="https://www.enchantedozarks.com/cuneiform-ocr/grammar-cheatsheet/" target="_blank">
+                <h3>Concordance</h3>
+                <p>Trace any word across 4,000 years of texts with period distribution</p>
+            </div>
+            <div class="feature-card" onclick="showTab('library');document.querySelector('[onclick*=library]').classList.add('active');">
                 <div class="card-icon">[=]</div>
-                <h3>Grammar Cheatsheet</h3>
-                <p>Quick reference for Sumerian grammar rules</p>
-            </a>
+                <h3>Tablet Library</h3>
+                <p>Browse 102,511 tablets by period, genre, and keyword</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">[~]</div>
+                <h3>Sumerian Grammar</h3>
+                <p>Agglutinative language: noun + case suffix. SOV word order. Ergative alignment.</p>
+            </div>
+            <div class="feature-card">
+                <div class="card-icon">[*]</div>
+                <h3>Writing System</h3>
+                <p>Logographic + syllabic. Reed stylus on wet clay. 2,093 signs encode Sumerian and Akkadian.</p>
+            </div>
         </div>
     </div>
 
@@ -153,42 +153,68 @@
 </main>
 
 <script>
-const API = 'https://www.enchantedozarks.com';
+/* =====================================================================
+   CUNEIFORM PORTAL - 100% Static Data (Bible Pattern)
+   All data pre-built as JSON. Zero API calls. Zero cross-origin requests.
+   ===================================================================== */
+
+// Data caches (loaded lazily per tab)
+let concData = null;    // 48,080 concordance entries
+let signData = [];      // 2,093 signs
+let tabletData = null;  // 102,511 tablets
+let filterData = null;  // period/genre options
+let statsData = null;   // corpus statistics
+
 let searchTimeout = null;
 let libTimeout = null;
-let signData = [];
 let signPage = 1;
+let libPage = 1;
 const SIGNS_PER_PAGE = 60;
+const TABLETS_PER_PAGE = 25;
 
-// Tab switching
+function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- Tab switching ----
 function showTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + tabId).classList.add('active');
     event.target.classList.add('active');
 
-    // Load data on first visit
     if (tabId === 'signs' && signData.length === 0) loadSigns();
-    if (tabId === 'library' && document.getElementById('library-results').querySelector('.loading')) {
-        loadFilterOptions();
-        loadTablets();
-    }
+    if (tabId === 'library' && !tabletData) loadLibrary();
+    if (tabId === 'concordance' && !concData) loadConcordanceData();
 }
 
-// Debounced search
+// ---- Stats (loaded on page init) ----
+async function loadStats() {
+    try {
+        const resp = await fetch('data/stats.json');
+        statsData = await resp.json();
+        if (statsData.total_tablets) document.getElementById('stat-tablets').textContent = statsData.total_tablets.toLocaleString();
+        if (statsData.total_lemmas) document.getElementById('stat-words').textContent = statsData.total_lemmas.toLocaleString();
+        if (statsData.total_signs) document.getElementById('stat-signs').textContent = statsData.total_signs.toLocaleString();
+    } catch(e) { /* use hardcoded defaults in HTML */ }
+}
+
+// ---- Concordance data (shared by Word Search + Concordance tabs) ----
+async function ensureConcData() {
+    if (concData) return;
+    const resp = await fetch('data/concordance.json');
+    concData = await resp.json();
+}
+
+// ---- Word Search tab ----
 function debounceSearch() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(searchWords, 300);
 }
 
-function debounceLibrary() {
-    clearTimeout(libTimeout);
-    libTimeout = setTimeout(loadTablets, 400);
-}
-
-// Word search via concordance
 async function searchWords() {
-    const q = document.getElementById('word-search').value.trim();
+    const q = document.getElementById('word-search').value.trim().toLowerCase();
     const area = document.getElementById('search-results');
     if (q.length < 2) {
         area.innerHTML = '<p class="loading">Type at least 2 characters to search</p>';
@@ -196,52 +222,44 @@ async function searchWords() {
     }
     area.innerHTML = '<p class="loading">Searching...</p>';
     try {
-        const resp = await fetch(API + '/cuneiform-ocr/api/concordance/search', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({q: q, limit: 30})
-        });
-        const data = await resp.json();
-        if (!data.results || data.results.length === 0) {
-            area.innerHTML = '<p class="loading">No results for "' + q + '"</p>';
+        await ensureConcData();
+        const results = concData.filter(r =>
+            (r.lemma && r.lemma.toLowerCase().includes(q)) ||
+            (r.gloss && r.gloss.toLowerCase().includes(q))
+        ).slice(0, 30);
+
+        if (results.length === 0) {
+            area.innerHTML = '<p class="loading">No results for "' + esc(q) + '"</p>';
             return;
         }
         let html = '';
-        data.results.forEach(r => {
+        results.forEach(r => {
             html += '<div class="result-item" onclick="showWordDetail(\'' + encodeURIComponent(r.lemma) + '\')">';
             html += '<span class="result-word">' + esc(r.lemma) + '</span>';
             html += '<span class="result-gloss"> - ' + esc(r.gloss || '') + '</span>';
-            if (r.unicode_glyph) html += ' <span class="cuneiform-glyph" style="font-size:1.3rem;">' + r.unicode_glyph + '</span>';
             html += '<div class="result-meta">' + (r.occurrence_count || 0).toLocaleString() + ' occurrences in ' + (r.tablet_count || 0).toLocaleString() + ' tablets</div>';
             html += '</div>';
         });
         area.innerHTML = html;
     } catch(e) {
-        area.innerHTML = '<p class="error-msg">API unavailable. Try again later.</p>';
+        area.innerHTML = '<p class="error-msg">Could not load concordance data.</p>';
     }
 }
 
-// Word detail view
+// Word detail view (client-side lookup)
 async function showWordDetail(lemmaEncoded) {
     const lemma = decodeURIComponent(lemmaEncoded);
     const area = document.getElementById('search-results');
     area.innerHTML = '<p class="loading">Loading word detail...</p>';
     try {
-        const resp = await fetch(API + '/cuneiform-ocr/concordance/' + encodeURIComponent(lemma));
-        // This returns HTML from the Flask app, so we use the API instead
-        const apiResp = await fetch(API + '/cuneiform-ocr/api/concordance/search', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({q: lemma, limit: 1})
-        });
-        const data = await apiResp.json();
-        if (!data.results || data.results.length === 0) {
+        await ensureConcData();
+        const w = concData.find(r => r.lemma === lemma);
+        if (!w) {
             area.innerHTML = '<p class="error-msg">Word not found</p>';
             return;
         }
-        const w = data.results[0];
-        let periods = {};
-        try { periods = JSON.parse(w.periods || '{}'); } catch(e) {}
+        let periods = w.period_json || {};
+        if (typeof periods === 'string') try { periods = JSON.parse(periods); } catch(e) { periods = {}; }
 
         let maxCount = Math.max(...Object.values(periods), 1);
         let barsHtml = '';
@@ -252,19 +270,36 @@ async function showWordDetail(lemmaEncoded) {
             barsHtml += '<span class="period-count">' + count.toLocaleString() + '</span></div>';
         });
 
+        let genres = w.genre_json || {};
+        if (typeof genres === 'string') try { genres = JSON.parse(genres); } catch(e) { genres = {}; }
+        let genreHtml = '';
+        let maxGenre = Math.max(...Object.values(genres), 1);
+        Object.entries(genres).sort((a,b) => b[1] - a[1]).slice(0, 8).forEach(([g, c]) => {
+            let pct = Math.round((c / maxGenre) * 100);
+            genreHtml += '<div class="period-bar"><span class="period-label">' + esc(g) + '</span>';
+            genreHtml += '<div class="period-fill" style="width:' + pct + '%;background:var(--silver,#C0C0C0);"></div>';
+            genreHtml += '<span class="period-count">' + c.toLocaleString() + '</span></div>';
+        });
+
         let html = '<div class="word-detail">';
         html += '<div style="display:flex;align-items:center;gap:1rem;">';
-        if (w.unicode_glyph) html += '<span class="cuneiform-glyph-lg">' + w.unicode_glyph + '</span>';
-        html += '<div><h2>' + esc(w.lemma) + '</h2><div class="gloss">' + esc(w.gloss || 'unknown') + '</div></div></div>';
+        html += '<div><h2>' + esc(w.lemma) + '</h2>';
+        html += '<div class="gloss">' + esc(w.gloss || 'unknown') + '</div>';
+        if (w.pos) html += '<div class="result-meta">' + esc(w.pos) + (w.semantic_category ? ' | ' + esc(w.semantic_category) : '') + '</div>';
+        html += '</div></div>';
         html += '<div class="stats-grid" style="margin:1rem 0;">';
         html += '<div class="stat-box"><div class="stat-value text-gold">' + (w.occurrence_count || 0).toLocaleString() + '</div><div class="stat-label">Occurrences</div></div>';
         html += '<div class="stat-box"><div class="stat-value text-gold">' + (w.tablet_count || 0).toLocaleString() + '</div><div class="stat-label">Tablets</div></div>';
+        if (w.period_first_seen) html += '<div class="stat-box"><div class="stat-value text-gold" style="font-size:0.9rem;">' + esc(w.period_first_seen) + '</div><div class="stat-label">First Attested</div></div>';
         html += '</div>';
         if (barsHtml) {
             html += '<h3 class="text-gold" style="margin:1rem 0 0.5rem;">Period Distribution</h3>';
             html += barsHtml;
         }
-        html += '<p style="margin-top:1rem;"><a href="' + API + '/cuneiform-ocr/concordance/' + encodeURIComponent(w.lemma) + '" target="_blank" style="color:var(--gold);">View full concordance on Enchanted Ozarks &gt;</a></p>';
+        if (genreHtml) {
+            html += '<h3 class="text-gold" style="margin:1rem 0 0.5rem;">Genre Distribution</h3>';
+            html += genreHtml;
+        }
         html += '</div>';
         html += '<button class="page-btn" onclick="document.getElementById(\'word-search\').dispatchEvent(new Event(\'input\'))" style="margin-top:0.5rem;">&lt; Back to results</button>';
         area.innerHTML = html;
@@ -273,17 +308,16 @@ async function showWordDetail(lemmaEncoded) {
     }
 }
 
-// Sign chart
+// ---- Sign Chart tab ----
 async function loadSigns() {
     const grid = document.getElementById('sign-grid');
     grid.innerHTML = '<p class="loading">Loading 2,093 signs...</p>';
     try {
-        const resp = await fetch(API + '/cuneiform-ocr/api/sign-chart-data');
-        const data = await resp.json();
-        signData = data.signs || data || [];
+        const resp = await fetch('data/signs.json');
+        signData = await resp.json();
         renderSigns();
     } catch(e) {
-        grid.innerHTML = '<p class="error-msg">Could not load signs. API may be unavailable.</p>';
+        grid.innerHTML = '<p class="error-msg">Could not load signs data.</p>';
     }
 }
 
@@ -291,7 +325,11 @@ function renderSigns() {
     const grid = document.getElementById('sign-grid');
     const filter = (document.getElementById('sign-search').value || '').toLowerCase();
     let filtered = signData;
-    if (filter) filtered = signData.filter(s => (s.name || s.sign_name || '').toLowerCase().includes(filter));
+    if (filter) filtered = signData.filter(s =>
+        (s.sign_name || '').toLowerCase().includes(filter) ||
+        (s.primary_reading || '').toLowerCase().includes(filter) ||
+        (s.all_readings || '').toLowerCase().includes(filter)
+    );
 
     const start = (signPage - 1) * SIGNS_PER_PAGE;
     const page = filtered.slice(start, start + SIGNS_PER_PAGE);
@@ -299,20 +337,21 @@ function renderSigns() {
 
     let html = '';
     page.forEach(s => {
-        let glyph = s.unicode || s.unicode_value || '';
-        let name = s.name || s.sign_name || '?';
-        html += '<div class="sign-card" title="' + esc(name) + '">';
-        html += '<div class="cuneiform-glyph">' + glyph + '</div>';
-        html += '<div class="sign-name">' + esc(name) + '</div>';
+        let name = s.sign_name || '?';
+        let reading = s.primary_reading || '';
+        let type = s.sign_type || '';
+        html += '<div class="sign-card" title="' + esc(name) + ' [' + esc(reading) + ']">';
+        html += '<div class="sign-name" style="font-size:1.1rem;font-weight:bold;">' + esc(name) + '</div>';
+        html += '<div class="sign-name" style="font-size:0.85rem;color:var(--gold,#D4AF37);">' + esc(reading) + '</div>';
+        if (type && type !== 'atomic') html += '<div class="sign-name" style="font-size:0.7rem;opacity:0.6;">' + esc(type) + '</div>';
         html += '</div>';
     });
     grid.innerHTML = html || '<p class="loading">No signs match filter</p>';
 
-    // Pagination
     let pHtml = '';
     if (totalPages > 1) {
         if (signPage > 1) pHtml += '<button class="page-btn" onclick="signPage--;renderSigns();">&lt;</button>';
-        pHtml += '<span class="page-btn active">' + signPage + ' / ' + totalPages + '</span>';
+        pHtml += '<span class="page-btn active">' + signPage + ' / ' + totalPages + ' (' + filtered.length.toLocaleString() + ' signs)</span>';
         if (signPage < totalPages) pHtml += '<button class="page-btn" onclick="signPage++;renderSigns();">&gt;</button>';
     }
     document.getElementById('sign-pagination').innerHTML = pHtml;
@@ -320,100 +359,158 @@ function renderSigns() {
 
 function filterSigns() { signPage = 1; renderSigns(); }
 
-// Tablet library
-async function loadFilterOptions() {
+// ---- Tablet Library tab ----
+async function loadLibrary() {
+    const area = document.getElementById('library-results');
+    area.innerHTML = '<p class="loading">Loading 102,511 tablets...</p>';
     try {
-        const resp = await fetch(API + '/cuneiform-ocr/api/filter-options');
-        const data = await resp.json();
+        const [tabResp, filtResp] = await Promise.all([
+            fetch('data/tablets.json'),
+            fetch('data/filters.json')
+        ]);
+        tabletData = await tabResp.json();
+        filterData = await filtResp.json();
+
+        // Populate filter dropdowns
         const periodSel = document.getElementById('lib-period');
         const genreSel = document.getElementById('lib-genre');
-        (data.periods || []).forEach(p => {
+        (filterData.periods || []).forEach(p => {
             periodSel.innerHTML += '<option value="' + esc(p) + '">' + esc(p) + '</option>';
         });
-        (data.genres || []).forEach(g => {
+        (filterData.genres || []).forEach(g => {
             genreSel.innerHTML += '<option value="' + esc(g) + '">' + esc(g) + '</option>';
         });
-    } catch(e) { /* silently fail */ }
-}
 
-let libPage = 1;
-async function loadTablets(page) {
-    if (page) libPage = page; else libPage = 1;
-    const area = document.getElementById('library-results');
-    const period = document.getElementById('lib-period').value;
-    const genre = document.getElementById('lib-genre').value;
-    const q = document.getElementById('lib-search').value.trim();
-    area.innerHTML = '<p class="loading">Loading tablets...</p>';
-    try {
-        let url = API + '/cuneiform-ocr/api/tablets?page=' + libPage + '&per_page=25';
-        if (period) url += '&period=' + encodeURIComponent(period);
-        if (genre) url += '&genre=' + encodeURIComponent(genre);
-        if (q) url += '&q=' + encodeURIComponent(q);
-        const resp = await fetch(url);
-        const data = await resp.json();
-        const tablets = data.tablets || data.results || [];
-        const total = data.total || 0;
-        if (tablets.length === 0) {
-            area.innerHTML = '<p class="loading">No tablets found</p>';
-            document.getElementById('lib-pagination').innerHTML = '';
-            return;
-        }
-        let html = '<div class="tablet-row tablet-header"><span>Title</span><span>Period</span><span>Genre</span><span>Lines</span></div>';
-        tablets.forEach(t => {
-            html += '<div class="tablet-row" onclick="window.open(\'' + API + '/cuneiform-ocr/library/' + esc(t.textid) + '\',\'_blank\')">';
-            html += '<span class="tablet-title">' + esc(t.title || t.textid) + '</span>';
-            html += '<span class="tablet-meta">' + esc(t.period || '-') + '</span>';
-            html += '<span class="tablet-meta">' + esc(t.genre || '-') + '</span>';
-            html += '<span class="tablet-meta">' + (t.total_lines || 0) + '</span>';
-            html += '</div>';
-        });
-        area.innerHTML = html;
-
-        // Pagination
-        const totalPages = Math.ceil(total / 25);
-        let pHtml = '';
-        if (totalPages > 1) {
-            if (libPage > 1) pHtml += '<button class="page-btn" onclick="loadTablets(' + (libPage-1) + ')">&lt;</button>';
-            pHtml += '<span class="page-btn active">' + libPage + ' / ' + totalPages + ' (' + total.toLocaleString() + ' total)</span>';
-            if (libPage < totalPages) pHtml += '<button class="page-btn" onclick="loadTablets(' + (libPage+1) + ')">&gt;</button>';
-        }
-        document.getElementById('lib-pagination').innerHTML = pHtml;
+        renderTablets();
     } catch(e) {
-        area.innerHTML = '<p class="error-msg">Could not load tablets. API may be unavailable.</p>';
+        area.innerHTML = '<p class="error-msg">Could not load tablet data.</p>';
     }
 }
 
-// Concordance search
+function debounceLibrary() {
+    clearTimeout(libTimeout);
+    libTimeout = setTimeout(function() { libPage = 1; renderTablets(); }, 400);
+}
+
+function loadTablets(page) {
+    if (page) libPage = page; else libPage = 1;
+    renderTablets();
+}
+
+function renderTablets() {
+    if (!tabletData) return;
+    const area = document.getElementById('library-results');
+    const period = document.getElementById('lib-period').value;
+    const genre = document.getElementById('lib-genre').value;
+    const q = (document.getElementById('lib-search').value || '').trim().toLowerCase();
+
+    let filtered = tabletData;
+    if (period) filtered = filtered.filter(t => t.period === period);
+    if (genre) filtered = filtered.filter(t => t.genre === genre);
+    if (q) filtered = filtered.filter(t =>
+        (t.title && t.title.toLowerCase().includes(q)) ||
+        (t.textid && t.textid.toLowerCase().includes(q)) ||
+        (t.corpus && t.corpus.toLowerCase().includes(q))
+    );
+
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / TABLETS_PER_PAGE);
+    if (libPage > totalPages && totalPages > 0) libPage = totalPages;
+    const start = (libPage - 1) * TABLETS_PER_PAGE;
+    const page = filtered.slice(start, start + TABLETS_PER_PAGE);
+
+    if (page.length === 0) {
+        area.innerHTML = '<p class="loading">No tablets found</p>';
+        document.getElementById('lib-pagination').innerHTML = '';
+        return;
+    }
+
+    let html = '<div class="tablet-row tablet-header"><span>Title</span><span>Period</span><span>Genre</span><span>Lines</span></div>';
+    page.forEach(t => {
+        html += '<div class="tablet-row" onclick="viewTablet(\'' + esc(t.textid) + '\')">';
+        html += '<span class="tablet-title">' + esc(t.title || t.textid) + '</span>';
+        html += '<span class="tablet-meta">' + esc(t.period || '-') + '</span>';
+        html += '<span class="tablet-meta">' + esc(t.genre || '-') + '</span>';
+        html += '<span class="tablet-meta">' + (t.total_lines || 0) + '</span>';
+        html += '</div>';
+    });
+    area.innerHTML = html;
+
+    let pHtml = '';
+    if (totalPages > 1) {
+        if (libPage > 1) pHtml += '<button class="page-btn" onclick="loadTablets(' + (libPage-1) + ')">&lt;</button>';
+        pHtml += '<span class="page-btn active">' + libPage + ' / ' + totalPages + ' (' + total.toLocaleString() + ' total)</span>';
+        if (libPage < totalPages) pHtml += '<button class="page-btn" onclick="loadTablets(' + (libPage+1) + ')">&gt;</button>';
+    }
+    document.getElementById('lib-pagination').innerHTML = pHtml;
+}
+
+// View individual tablet detail
+function viewTablet(textid) {
+    if (!tabletData) return;
+    const t = tabletData.find(x => x.textid === textid);
+    if (!t) return;
+    const area = document.getElementById('library-results');
+    let html = '<div class="word-detail">';
+    html += '<h2>' + esc(t.title || t.textid) + '</h2>';
+    html += '<div class="stats-grid" style="margin:1rem 0;">';
+    html += '<div class="stat-box"><div class="stat-value text-gold">' + esc(t.textid) + '</div><div class="stat-label">Text ID</div></div>';
+    html += '<div class="stat-box"><div class="stat-value text-gold">' + esc(t.corpus || '-') + '</div><div class="stat-label">Corpus</div></div>';
+    html += '<div class="stat-box"><div class="stat-value text-gold">' + esc(t.period || '-') + '</div><div class="stat-label">Period</div></div>';
+    html += '<div class="stat-box"><div class="stat-value text-gold">' + esc(t.genre || '-') + '</div><div class="stat-label">Genre</div></div>';
+    html += '</div>';
+    if (t.subgenre) html += '<p class="text-silver">Sub-genre: ' + esc(t.subgenre) + '</p>';
+    if (t.provenience) html += '<p class="text-silver">Provenience: ' + esc(t.provenience) + '</p>';
+    html += '<p class="text-silver">' + (t.total_lines || 0) + ' lines | ' + (t.total_words || 0) + ' words</p>';
+    html += '</div>';
+    html += '<button class="page-btn" onclick="renderTablets()" style="margin-top:0.5rem;">&lt; Back to library</button>';
+    area.innerHTML = html;
+}
+
+// ---- Concordance tab ----
+async function loadConcordanceData() {
+    const area = document.getElementById('conc-results');
+    area.innerHTML = '<p class="loading">Loading concordance index (48,080 words)...</p>';
+    try {
+        await ensureConcData();
+        area.innerHTML = '<p class="loading">Concordance loaded. Search for a word to see its occurrences across all tablets.</p>';
+    } catch(e) {
+        area.innerHTML = '<p class="error-msg">Could not load concordance data.</p>';
+    }
+}
+
 async function searchConcordance() {
-    const q = document.getElementById('conc-search').value.trim();
+    const q = document.getElementById('conc-search').value.trim().toLowerCase();
     const area = document.getElementById('conc-results');
     if (!q) return;
     area.innerHTML = '<p class="loading">Searching concordance...</p>';
     try {
-        const resp = await fetch(API + '/cuneiform-ocr/api/concordance/search', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({q: q, limit: 10})
-        });
-        const data = await resp.json();
-        if (!data.results || data.results.length === 0) {
+        await ensureConcData();
+        const results = concData.filter(r =>
+            (r.lemma && r.lemma.toLowerCase().includes(q)) ||
+            (r.gloss && r.gloss.toLowerCase().includes(q))
+        ).slice(0, 10);
+
+        if (results.length === 0) {
             area.innerHTML = '<p class="loading">No concordance results for "' + esc(q) + '"</p>';
             return;
         }
         let html = '';
-        data.results.forEach(r => {
-            let periods = {};
-            try { periods = JSON.parse(r.periods || '{}'); } catch(e) {}
+        results.forEach(r => {
+            let periods = r.period_json || {};
+            if (typeof periods === 'string') try { periods = JSON.parse(periods); } catch(e) { periods = {}; }
             let maxCount = Math.max(...Object.values(periods), 1);
 
             html += '<div class="word-detail" style="margin-bottom:1.5rem;">';
             html += '<div style="display:flex;align-items:center;gap:1rem;">';
-            if (r.unicode_glyph) html += '<span class="cuneiform-glyph-lg">' + r.unicode_glyph + '</span>';
             html += '<div><h2 style="margin:0;">' + esc(r.lemma) + '</h2>';
-            html += '<div class="gloss">' + esc(r.gloss || '') + '</div></div></div>';
+            html += '<div class="gloss">' + esc(r.gloss || '') + '</div>';
+            if (r.pos) html += '<div class="result-meta">' + esc(r.pos) + '</div>';
+            html += '</div></div>';
             html += '<div class="stats-grid" style="margin:1rem 0;">';
             html += '<div class="stat-box"><div class="stat-value text-gold">' + (r.occurrence_count||0).toLocaleString() + '</div><div class="stat-label">Occurrences</div></div>';
             html += '<div class="stat-box"><div class="stat-value text-gold">' + (r.tablet_count||0).toLocaleString() + '</div><div class="stat-label">Tablets</div></div>';
+            if (r.period_first_seen) html += '<div class="stat-box"><div class="stat-value text-gold" style="font-size:0.85rem;">' + esc(r.period_first_seen) + '</div><div class="stat-label">First Attested</div></div>';
             html += '</div>';
 
             Object.entries(periods).sort((a,b) => b[1]-a[1]).slice(0,8).forEach(([p,c]) => {
@@ -422,30 +519,15 @@ async function searchConcordance() {
                 html += '<div class="period-fill" style="width:' + pct + '%;"></div>';
                 html += '<span class="period-count">' + c.toLocaleString() + '</span></div>';
             });
-            html += '<p><a href="' + API + '/cuneiform-ocr/concordance/' + encodeURIComponent(r.lemma) + '" target="_blank" style="color:var(--gold);">Full concordance &gt;</a></p>';
             html += '</div>';
         });
         area.innerHTML = html;
     } catch(e) {
-        area.innerHTML = '<p class="error-msg">Concordance search failed. API may be unavailable.</p>';
+        area.innerHTML = '<p class="error-msg">Concordance search failed.</p>';
     }
 }
 
-// Load stats on page load
-async function loadStats() {
-    try {
-        const resp = await fetch(API + '/cuneiform-ocr/api/corpus-stats');
-        const data = await resp.json();
-        if (data.total_tablets) document.getElementById('stat-tablets').textContent = data.total_tablets.toLocaleString();
-        if (data.total_words) document.getElementById('stat-words').textContent = data.total_words.toLocaleString();
-    } catch(e) { /* use defaults */ }
-}
-
-function esc(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
+// ---- Initialize ----
 loadStats();
 </script>
 </body>
