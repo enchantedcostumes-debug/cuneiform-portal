@@ -1,0 +1,58 @@
+/**
+ * Cuneiform Educational Portal - Stylesheet
+ * For cuneiform.ozark-oracle.com
+ * Copyright (c) 2026 Tammy L Casey. All rights reserved.
+ */
+.cuneiform-glyph { font-size: 2rem; color: var(--gold); }
+.cuneiform-glyph-lg { font-size: 3.5rem; color: var(--gold); }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+.feature-card { background: var(--black-card); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1.5rem; transition: border-color 0.3s; cursor: pointer; text-decoration: none; color: inherit; display: block; }
+.feature-card:hover { border-color: var(--gold); }
+.feature-card h3 { color: var(--gold); margin: 0.5rem 0; font-size: 1.1rem; }
+.feature-card p { color: var(--silver); font-size: 0.9rem; margin: 0; }
+.feature-card .card-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.search-container { max-width: 600px; margin: 2rem auto; }
+.search-box { width: 100%; padding: 0.8rem 1.2rem; background: var(--black-card); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--silver-light); font-size: 1rem; outline: none; box-sizing: border-box; }
+.search-box:focus { border-color: var(--gold); }
+.search-box::placeholder { color: var(--silver-dark); }
+.results-area { margin-top: 1.5rem; min-height: 200px; }
+.result-item { background: var(--black-card); border: 1px solid var(--glass-border-dim); border-radius: 6px; padding: 1rem; margin-bottom: 0.8rem; }
+.result-item:hover { border-color: var(--glass-border); }
+.result-word { color: var(--gold); font-weight: bold; font-size: 1.1rem; }
+.result-gloss { color: var(--silver-light); margin-left: 0.5rem; }
+.result-meta { color: var(--silver-dark); font-size: 0.85rem; margin-top: 0.3rem; }
+.tab-bar { display: flex; gap: 0; border-bottom: 2px solid var(--glass-border-dim); margin-bottom: 1.5rem; overflow-x: auto; }
+.tab-btn { padding: 0.7rem 1.2rem; background: none; border: none; color: var(--silver-dark); cursor: pointer; font-size: 0.95rem; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+.tab-btn:hover { color: var(--silver-light); }
+.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.sign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; }
+.sign-card { background: var(--black-card); border: 1px solid var(--glass-border-dim); border-radius: 6px; padding: 1rem; text-align: center; cursor: pointer; }
+.sign-card:hover { border-color: var(--gold); }
+.sign-name { color: var(--silver); font-size: 0.8rem; margin-top: 0.3rem; }
+.tablet-row { display: grid; grid-template-columns: 2fr 1fr 1fr 0.5fr; gap: 1rem; padding: 0.8rem; border-bottom: 1px solid var(--glass-border-dim); align-items: center; }
+.tablet-row:hover { background: rgba(212,175,55,0.05); }
+.tablet-header { color: var(--gold); font-weight: bold; font-size: 0.85rem; }
+.tablet-title { color: var(--silver-light); }
+.tablet-meta { color: var(--silver-dark); font-size: 0.85rem; }
+.loading { color: var(--silver-dark); text-align: center; padding: 2rem; }
+.error-msg { color: var(--error); text-align: center; padding: 1rem; }
+.pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+.page-btn { padding: 0.4rem 0.8rem; background: var(--black-card); border: 1px solid var(--glass-border-dim); border-radius: 4px; color: var(--silver); cursor: pointer; }
+.page-btn:hover, .page-btn.active { border-color: var(--gold); color: var(--gold); }
+.word-detail { background: var(--black-panel); border: 1px solid var(--glass-border); border-radius: 8px; padding: 2rem; margin: 1rem 0; }
+.word-detail h2 { color: var(--gold); margin: 0 0 0.5rem; }
+.word-detail .gloss { color: var(--silver-light); font-size: 1.2rem; margin-bottom: 1rem; }
+.occ-table { width: 100%; }
+.occ-table th { text-align: left; color: var(--gold); padding: 0.5rem; border-bottom: 1px solid var(--glass-border-dim); font-size: 0.85rem; }
+.occ-table td { padding: 0.5rem; color: var(--silver); font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.period-bar { display: flex; align-items: center; margin: 0.3rem 0; }
+.period-label { color: var(--silver); font-size: 0.85rem; width: 140px; flex-shrink: 0; }
+.period-fill { height: 18px; background: var(--gold); border-radius: 3px; min-width: 2px; }
+.period-count { color: var(--silver-dark); font-size: 0.8rem; margin-left: 0.5rem; }
+@media (max-width: 768px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    .tablet-row { grid-template-columns: 1fr; gap: 0.3rem; }
+    .sign-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+}
