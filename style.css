@@ -1,0 +1,546 @@
+/* Cuneiform Portal - Cultural Theme
+   Copyright 2026 Tammy L Casey. All rights reserved.
+   "Known by our fruits - not our roots"
+*/
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Libre+Baskerville:wght@400;700&display=swap');
+
+:root {
+    --bg-primary: #0D0B07;
+    --bg-secondary: #1C1710;
+    --bg-card: rgba(28, 23, 16, 0.85);
+    --bg-card-hover: rgba(28, 23, 16, 0.95);
+    --color-accent: #C4A35A;
+    --color-accent-glow: rgba(196, 163, 90, 0.3);
+    --color-secondary: #8B6F47;
+    --color-text: #DDD0BC;
+    --color-text-dim: #9A8A70;
+    --color-border: rgba(139, 111, 71, 0.25);
+    --color-border-accent: rgba(196, 163, 90, 0.4);
+    --font-heading: 'Cinzel', serif;
+    --font-body: 'Libre Baskerville', Georgia, serif;
+}
+
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--color-text);
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image: radial-gradient(circle at 60% 40%, rgba(196,163,90,0.04) 0%, transparent 50%),
+                      radial-gradient(circle at 20% 80%, rgba(139,111,71,0.03) 0%, transparent 50%);
+    background-attachment: fixed;
+}
+
+a { color: var(--color-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === LAYOUT === */
+.page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+}
+
+/* === HEADER === */
+.page-header {
+    text-align: center;
+    padding: 2.5rem 1rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.page-header h1 {
+    font-family: var(--font-heading);
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.8rem;
+}
+
+.text-gold { color: var(--color-accent); }
+.text-silver { color: var(--color-text-dim); }
+
+.page-header p {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    max-width: 700px;
+    margin: 0 auto;
+    opacity: 0.9;
+}
+
+.script-info {
+    color: var(--color-text-dim);
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+    letter-spacing: 0.05em;
+}
+
+
+.page-header::before {
+    content: "\12000\12038\1202D"; /* Cuneiform signs */
+    position: absolute; top: -30px; right: 15px;
+    font-size: 4rem; color: rgba(196,163,90,0.07);
+    pointer-events: none;
+}
+.alpha-card { border-radius: 2px; border: 1px solid var(--color-border); }
+
+/* === STATS BAR === */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-box {
+    background: linear-gradient(145deg, rgba(28,23,16,0.9) 0%, rgba(13,11,7,0.95) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1.2rem 0.8rem;
+    text-align: center;
+    transition: border-color 0.3s, transform 0.2s;
+}
+
+.stat-box:hover {
+    border-color: var(--color-border-accent);
+    transform: translateY(-2px);
+}
+
+.stat-value {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.3rem;
+}
+
+/* === TABS === */
+.tab-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    padding: 0.7rem 1.4rem;
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background: transparent;
+    color: var(--color-text-dim);
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.05em;
+    position: relative;
+    bottom: -1px;
+}
+
+.tab-btn:hover {
+    color: var(--color-accent);
+    border-color: var(--color-border-accent);
+    background: var(--bg-card);
+}
+
+.tab-btn.active {
+    background: linear-gradient(180deg, #C4A35A 0%, #A88A40 100%);
+    color: #0D0B07;
+    border-color: var(--color-accent);
+    font-weight: 700;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === SECTION HEADINGS === */
+.tab-content h2 {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    color: var(--color-accent);
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.04em;
+}
+
+.tab-content h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--color-accent);
+    margin-bottom: 0.8rem;
+}
+
+/* === ALPHABET GRID === */
+.alpha-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.8rem;
+    margin: 1rem 0;
+}
+
+.alpha-card {
+    background: linear-gradient(145deg, rgba(28,23,16,0.9) 0%, rgba(13,11,7,0.95) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1.2rem 0.8rem;
+    text-align: center;
+    transition: all 0.25s;
+    cursor: default;
+}
+
+.alpha-card:hover {
+    border-color: var(--color-accent);
+    background: var(--bg-card-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(196, 163, 90, 0.3);
+}
+
+.alpha-letter {
+    font-size: 2.5rem;
+    color: var(--color-accent);
+    line-height: 1.2;
+    font-family: var(--font-heading);
+    text-shadow: 0 0 20px rgba(196, 163, 90, 0.3);
+}
+
+.alpha-name {
+    color: var(--color-text);
+    font-size: 0.85rem;
+    margin-top: 0.4rem;
+    font-weight: 600;
+}
+
+.alpha-translit {
+    color: var(--color-text-dim);
+    font-size: 0.78rem;
+    font-style: italic;
+}
+
+.alpha-value {
+    color: var(--color-accent);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-top: 0.4rem;
+    font-family: 'Courier New', monospace;
+    background: rgba(139, 111, 71, 0.15);
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    display: inline-block;
+}
+
+/* === SEARCH & FORMS === */
+.search-container { margin-bottom: 1rem; }
+
+.search-box {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 15px rgba(196, 163, 90, 0.3);
+}
+
+.search-box::placeholder { color: var(--color-text-dim); opacity: 0.6; }
+
+select.search-box {
+    width: auto;
+    cursor: pointer;
+    padding-right: 2rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C4A35A' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+}
+
+.filter-row {
+    display: flex;
+    gap: 0.8rem;
+    margin: 0.8rem 0 1.2rem;
+    flex-wrap: wrap;
+}
+
+/* === BUTTONS === */
+.page-btn {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--color-border-accent);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-accent);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+}
+
+.page-btn:hover {
+    background: var(--color-accent);
+    color: var(--bg-primary);
+}
+
+.page-btn.active {
+    background: var(--bg-card);
+    border-color: var(--color-accent);
+    cursor: default;
+}
+
+/* === LEXICON TABLE === */
+.lex-table { width: 100%; }
+
+.lex-row {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1fr 2fr 1.5fr;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 4px;
+}
+
+.lex-row:hover:not(.lex-header) {
+    background: rgba(196, 163, 90, 0.3);
+}
+
+.lex-header {
+    font-weight: 700;
+    color: var(--color-accent);
+    border-bottom: 2px solid var(--color-border-accent);
+    cursor: default;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.lex-word {
+    font-size: 1.05rem;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.lex-gloss {
+    color: var(--color-text-dim);
+    font-size: 0.9rem;
+}
+
+.lex-gematria {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.lex-factors {
+    color: var(--color-text-dim);
+    font-size: 0.8rem;
+    font-family: 'Courier New', monospace;
+}
+
+.lex-type {
+    font-size: 0.75rem;
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+.lex-divine { border-left: 3px solid var(--color-accent); }
+.lex-prime { border-right: 3px solid var(--color-secondary); }
+
+/* === WORD DETAIL === */
+.word-detail {
+    background: linear-gradient(145deg, rgba(28,23,16,0.9) 0%, rgba(13,11,7,0.95) 100%);
+    border: 1px solid var(--color-border-accent);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.word-detail h2 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    color: var(--color-accent);
+    margin-bottom: 0.5rem;
+}
+
+.word-detail .gloss {
+    font-size: 1.2rem;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+/* === NUMEROLOGY RESULTS === */
+.result-item {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.result-word {
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.result-gloss {
+    color: var(--color-text-dim);
+    font-size: 0.9rem;
+}
+
+/* === DISTRIBUTION CHART === */
+.period-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.period-label {
+    width: 80px;
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--color-text-dim);
+    font-family: 'Courier New', monospace;
+}
+
+.period-fill {
+    height: 24px;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-secondary));
+    border-radius: 4px;
+    min-width: 2px;
+    transition: width 0.5s ease;
+}
+
+.period-count {
+    font-size: 0.85rem;
+    color: var(--color-text-dim);
+    font-family: 'Courier New', monospace;
+    min-width: 50px;
+}
+
+/* === SACRED GROUPS === */
+.sacred-group {
+    margin-bottom: 1.5rem;
+    padding: 1.2rem;
+    background: linear-gradient(145deg, rgba(28,23,16,0.9) 0%, rgba(13,11,7,0.95) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+}
+
+.sacred-words { margin-top: 0.6rem; }
+
+.sacred-word {
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.divine-tag {
+    display: inline-block;
+    background: rgba(196, 163, 90, 0.3);
+    color: var(--color-accent);
+    padding: 0.25rem 0.7rem;
+    border-radius: 5px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.match-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+.match-tag {
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    padding: 0.3rem 0.7rem;
+    border-radius: 5px;
+    font-size: 0.82rem;
+    color: var(--color-text);
+    transition: border-color 0.2s;
+}
+
+.match-tag:hover {
+    border-color: var(--color-accent);
+}
+
+/* === PAGINATION === */
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.2rem;
+    justify-content: center;
+}
+
+/* === PANEL / FOOTER INFO === */
+.panel {
+    background: linear-gradient(145deg, rgba(28,23,16,0.9) 0%, rgba(13,11,7,0.95) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+/* === LOADING / ERROR === */
+.loading {
+    color: var(--color-text-dim);
+    font-style: italic;
+    padding: 1rem 0;
+}
+
+.error-msg {
+    color: #E74C3C;
+    padding: 1rem 0;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .page-header h1 { font-size: 2rem; }
+    .page-header p { font-size: 0.95rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .stat-value { font-size: 1.3rem; }
+    .alpha-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.5rem; }
+    .alpha-letter { font-size: 2rem; }
+    .alpha-card { padding: 0.8rem 0.5rem; }
+    .lex-row { grid-template-columns: 1fr 2fr 1fr; }
+    .lex-factors, .lex-type { display: none; }
+    .filter-row { flex-direction: column; }
+    .tab-bar { gap: 0.3rem; }
+    .tab-btn { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+    .page-container { padding: 1rem; }
+    .word-detail { padding: 1.2rem; }
+    .page-header::before { display: none; }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 { font-size: 1.6rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+    .stat-box { padding: 0.8rem 0.4rem; }
+    .stat-value { font-size: 1.1rem; }
+    .alpha-grid { grid-template-columns: repeat(3, 1fr); }
+}
